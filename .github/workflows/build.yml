@@ -1,6 +1,9 @@
 name: Build APK
 
 on:
+  push:
+    paths:
+      - '*.zip'
   workflow_dispatch:
     inputs:
       app_name:
@@ -24,10 +27,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download zip from repo
+      - name: Get latest zip file
         run: |
-          curl -L -o project.zip "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ github.event.inputs.app_name }}.zip"
-          unzip project.zip -d ./project
+          LATEST_ZIP=$(ls -t *.zip | head -1)
+          echo "ZIP_FILE=$LATEST_ZIP" >> $GITHUB_ENV
+          unzip "$LATEST_ZIP" -d ./project
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -38,10 +42,10 @@ jobs:
         run: |
           cd ./project
           flutter pub get
-          flutter build apk --${{ github.event.inputs.mode }}
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.inputs.app_name }}-${{ github.event.inputs.mode }}
+          name: app-release
           path: project/build/app/outputs/flutter-apk/*.apk
