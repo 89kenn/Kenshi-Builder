@@ -1,0 +1,47 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Nama Aplikasi'
+        required: true
+        default: 'MyApp'
+      mode:
+        description: 'Mode Build'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download zip from repo
+        run: |
+          curl -L -o project.zip "https://raw.githubusercontent.com/${{ github.repository }}/main/${{ github.event.inputs.app_name }}.zip"
+          unzip project.zip -d ./project
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+
+      - name: Build APK
+        run: |
+          cd ./project
+          flutter pub get
+          flutter build apk --${{ github.event.inputs.mode }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.app_name }}-${{ github.event.inputs.mode }}
+          path: project/build/app/outputs/flutter-apk/*.apk
