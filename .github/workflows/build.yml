@@ -10,7 +10,7 @@ on:
         description: 'URL ZIP file Flutter project'
         required: true
         type: string
-      tag1:
+      build_tag:
         description: 'Tag / Version (contoh: v1.0.0)'
         required: false
         type: string
@@ -59,7 +59,7 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: flutter-apk-${{ github.event.inputs.tag1 }}
+        name: flutter-apk-${{ github.event.inputs.build_tag }}
         path: project/build/app/outputs/flutter-apk/*.apk
 
     - name: Create Release
@@ -67,13 +67,12 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: project/build/app/outputs/flutter-apk/*.apk
-        name: KENSHI AM PREM ${{ github.event.inputs.tag1 }}
+        name: KENSHI AM PREM ${{ github.event.inputs.build_tag }}
         body: |
           ## 🔥 KENSHI AM PREM — Flutter APK
           
           📱 Build: ${{ github.event.inputs.build_type }}
-          📌 Version: ${{ github.event.inputs.tag1 }}
-          📅 Build Time: ${{ github.event.repository.updated_at }}
+          📌 Version: ${{ github.event.inputs.build_tag }}
           
           ### Cara Install:
           1. Download APK
